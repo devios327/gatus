@@ -3541,3 +3541,66 @@ go install github.com/TwiN/gatus/v5@latest
 
 ### High level design overview
 ![Gatus diagram](.github/assets/gatus-diagram.jpg)
+
+### RUN IN DOCKER
+
+Create `config.yaml`:
+```
+storage:
+  type: sqlite
+  path: data.db
+
+alerting:
+  email:
+    from: "---@mail.ru"
+    username: "---@mail.ru"
+    password: "---"
+    host: "smtp.mail.ru"
+    port: 465
+    to: "---@mail.ru,---@gmail.com"
+    client:
+      insecure: false
+  telegram:
+    token: "---"
+    id: "---"
+
+security:
+  basic:
+    username: "---"
+    password-bcrypt-base64: "---"
+
+endpoints:
+  - name: ---
+    url: https://---
+    interval: 60s
+    headers:
+      Authorization: "Basic ---"
+    conditions:
+      - "[STATUS] == 200"
+    alerts:
+      - type: telegram
+        send-on-resolved: true
+      - type: email
+        description: "healthcheck failed"
+        send-on-resolved: true
+
+external-endpoints:
+  - name: ---
+    token: "---"
+    heartbeat:
+      interval: 2m  # Automatically create a failure if no update is received within 2 minutes
+    alerts:
+      - type: telegram
+        description: "healthcheck failed"
+        send-on-resolved: true
+      - type: email
+        description: "healthcheck failed"
+        send-on-resolved: true
+
+```
+
+Terminal command to run gatus container:
+
+```
+docker run -d   -p 8080:8080   --mount type=bind,source="$(pwd)"/config.yaml,target=/config/config.yaml   --name gatus   --restart=always   ghcr.io/twin/gatus:stable
+```
